@@ -110,7 +110,7 @@ public class GenericPool<R> {
             }
             R r = this.findAnyNotAcquired();
             while (r == null) {
-                // if there is no resource not acquired, we must wait for another thread to update this situation
+                // if there is not one resource available (acquired), we must wait for another thread to update this situation
                 // meaning changing the status of some resource from acquired to not acquired, or adding some new resource in
                 // not acquired state
                 this.waitForSomeResourceNotAcquired.await();
@@ -186,6 +186,10 @@ public class GenericPool<R> {
         } finally {
             this.writeLock.unlock();
         }
+    }
+
+    public int size() {
+        return this.map.size();
     }
 
     private R findAnyNotAcquired() {
