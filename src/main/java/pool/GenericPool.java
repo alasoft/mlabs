@@ -1,3 +1,5 @@
+package pool;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -5,7 +7,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-//  GenericPool class, with several methods fine tuned to avoid thread issues, like race conditions on shared data.
+//  pool.GenericPool class, with several methods fine tuned to avoid thread issues, like race conditions on shared data.
 public class GenericPool<R> {
 
     // We choose locks instead of 'syncronized' keyword, because then we can use conditions.
@@ -81,6 +83,17 @@ public class GenericPool<R> {
                 return true;
             }
             return false;
+        } finally {
+            this.writeLock.unlock();
+        }
+    }
+
+    // Extra method, useful for tests
+    public void clean() {
+        this.writeLock.lock();
+        try {
+            this.map.clear();
+            this.conditionsSignalAll();
         } finally {
             this.writeLock.unlock();
         }

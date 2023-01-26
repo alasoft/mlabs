@@ -1,27 +1,25 @@
-import lombok.Data;
 import org.apache.log4j.Logger;
+import pool.GenericPool;
+import resource.Person;
 
 import java.util.*;
 
-public class Test {
+// This class does not implement formally a 'test'. Instead it allows to try the GenericPool.java class under
+// stress conditions, meaning running periodic tasks wich randomly add, acquire, release and remove
+// some resources, logging the result of these operations on console and external file.
+// The stress context is produced by the periodicity of each task. Every second each of these tasks is
+// executed, putting a test on the GenericPool.class.
+public class StressTest {
 
-    static private final Logger logger = Logger.getLogger(Test.class);
+    static private final Logger logger = Logger.getLogger(StressTest.class);
     static private final Integer personsQuantity = 100;
     static private final Random random = new Random();
 
     private final GenericPool<Person> pool = new GenericPool<Person>();
-    private final List<Person> persons = generatePersons();
-
-    static private List<Person> generatePersons() {
-        List<Person> list = new ArrayList<>();
-        for (int i = 0; i < personsQuantity; i++) {
-            list.add(new Person(i, "firstName " + i, "lastName " + i));
-        }
-        return list;
-    }
+    private final List<Person> persons = Person.generate(personsQuantity);
 
     static public void main(String[] args) {
-        new Test().test();
+        new StressTest().test();
     }
 
     // Brute force test
@@ -41,7 +39,7 @@ public class Test {
             public void run() {
                 for (Person person : persons) {
                     if (pool.add(person)) {
-                        logger.info("pool.add() -> Person added: " + person);
+                        logger.info("pool.add() -> resource.Person added: " + person);
                     }
                 }
             }
@@ -61,7 +59,7 @@ public class Test {
                 try {
                     Person person = pool.acquire();
                     if (person != null) {
-                        logger.info("pool.acquire() -> Person acquired: " + person);
+                        logger.info("pool.acquire() -> resource.Person acquired: " + person);
                     }
                 } catch (Exception e) {
                     logger.info(e.getMessage());
@@ -85,7 +83,7 @@ public class Test {
                     for (int i = 0; i < 5; i++) {
                         Person person = persons.get(random.nextInt(personsQuantity));
                         if (person != null && pool.release(person)) {
-                            logger.info("pool.release() -> Person released: " + person);
+                            logger.info("pool.release() -> resource.Person released: " + person);
                         }
                     }
                 } catch (Exception e) {
@@ -109,7 +107,7 @@ public class Test {
                     for (int i = 0; i < 5; i++) {
                         Person person = persons.get(random.nextInt(personsQuantity));
                         if (person != null && pool.remove(person)) {
-                            logger.info("pool.remove() -> Person removed: " + person);
+                            logger.info("pool.remove() -> resource.Person removed: " + person);
                         }
                     }
                 } catch (Exception e) {
@@ -126,17 +124,3 @@ public class Test {
 
 }
 
-@Data
-class Person extends Object {
-
-    private Integer id;
-    private String firstName;
-    private String lastName;
-
-    public Person(Integer id, String firstName, String lastName) {
-        this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
-    }
-
-}
