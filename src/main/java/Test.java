@@ -1,12 +1,11 @@
 import lombok.Data;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import java.util.*;
 
 public class Test {
 
-    static private final Logger logger = LogManager.getLogger(Test.class);
+    static private final Logger logger = Logger.getLogger(Test.class);
     static private final Integer personsQuantity = 100;
     static private final Random random = new Random();
 
